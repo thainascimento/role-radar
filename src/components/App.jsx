@@ -10,7 +10,8 @@ const App = () => { // o () => {} é uma função arrow que é basicamente uma f
     }
     return (
         <> 
-        <h1 className="titulo"> {/* cria o header da página, com a classe titulo*/}
+        <h1 className="titulo">
+            <i className="pi pi-map-marker"></i>{' '}
             RolêRadar
             </h1>
 
