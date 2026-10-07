@@ -1,10 +1,5 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import {createRoot} from 'react-dom/client';
+import App from './components/App.jsx';
+import './styles.css'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+createRoot(document.getElementById('root')).render(<App />) // cria a raiz do aplicativo React e renderiza o componente App dentro do elemento com id 'root' no HTML
