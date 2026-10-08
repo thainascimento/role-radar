@@ -1,3 +1,6 @@
+import Cartao from "./Cartao";
+import Creditos from "./Creditos";
+
 // const declara cnstante q é uma variavel que nao ser redefinida depois de declarada
 const App = () => { // o () => {} é uma função arrow que é basicamente uma forma mais curta de se escrever uma função em javacsriopt
     const estiloSubtitulo = {
@@ -18,6 +21,12 @@ const App = () => { // o () => {} é uma função arrow que é basicamente uma f
         <p style={estiloSubtitulo}> {/* subtitulo como PARAGRAFO, por isso a tag <p> e não <h2> */}
             Descubra o que existe perto de você
         </p>
+
+        <Creditos />
+
+        <Cartao cabecalho="Teste">
+            <p>Conteúdo do cartão</p>
+        </Cartao>   
 
         <footer> {/* o rodapé da página, que contém o copyright e o ano atual, que é obtido através da função obterAno() */}
             RolêRadar &copy; {obterAno()}
