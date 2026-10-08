@@ -1,37 +1,91 @@
-import Cartao from "./Cartao";
 import Creditos from "./Creditos";
+import React from "react";
+import Loading from "./Loading";
 
-// const declara cnstante q é uma variavel que nao ser redefinida depois de declarada
-const App = () => { // o () => {} é uma função arrow que é basicamente uma forma mais curta de se escrever uma função em javacsriopt
-    const estiloSubtitulo = {
-        fontSize: '18px'
+class App extends React.Component {
+
+    state = {
+        latitude: null,
+        longitude: null,
+        horarioLocalizacao: null,
+        mensagemDeErro: null
     }
 
-    const obterAno = () => {
-        const dataAtual = new Date();
-        return dataAtual.getFullYear();
+    obterLocalizacao = () => {
+        navigator.geolocation.getCurrentPosition(
+            (posicao) => {
+                this.setState({
+                    latitude: posicao.coords.latitude,
+                    longitude: posicao.coords.longitude,
+                    horarioLocalizacao: Date.now(),
+                    mensagemDeErro: null
+                })
+            },
+            (erro) => {
+                console.error(erro)
+
+                this.setState({
+                    mensagemDeErro: "Não foi possível obter sua localização. Libere o acesso no navegador e atualize a página."
+                })
+            }
+        )
     }
-    return (
-        <> 
-        <h1 className="titulo">
-            <i className="pi pi-map-marker"></i>{' '}
-            RolêRadar
-            </h1>
 
-        <p style={estiloSubtitulo}> {/* subtitulo como PARAGRAFO, por isso a tag <p> e não <h2> */}
-            Descubra o que existe perto de você
-        </p>
+    componentDidMount() { // método do ciclo de vida do React que é chamado quando o componente é montado
+        this.obterLocalizacao()
+    }
 
-        <Creditos />
+    render() {
 
-        <Cartao cabecalho="Teste">
-            <p>Conteúdo do cartão</p>
-        </Cartao>   
+        const estiloSubtitulo = {
+            fontSize: '18px'
+        }
 
-        <footer> {/* o rodapé da página, que contém o copyright e o ano atual, que é obtido através da função obterAno() */}
-            RolêRadar &copy; {obterAno()}
-        </footer>
-        </>
-    )
+        const obterAno = () => {
+            const dataAtual = new Date();
+            return dataAtual.getFullYear();
+        }
+
+        let conteudo
+        if (this.state.mensagemDeErro) {
+            conteudo = (
+                <p>{this.state.mensagemDeErro}</p>
+            )
+        }
+        else if (this.state.latitude == null) {
+            conteudo = (
+                <Loading mensagem="Aguardando permissão de localização..." />
+            )
+        }
+        else {
+            conteudo = (
+                <p>
+                    Localização obtida: {this.state.latitude}, {this.state.longitude}
+                </p>
+            )
+        }
+
+        return (
+            <>
+                <h1 className="titulo">
+                    <i className="pi pi-map-marker"></i>{' '}
+                    RolêRadar
+                </h1>
+
+                <p style={estiloSubtitulo}>
+                    Descubra o que existe perto de você
+                </p>
+
+                <Creditos />
+
+                {conteudo}
+
+                <footer>
+                    RolêRadar &copy; {obterAno()}
+                </footer>
+            </>
+        )
+    }
 }
-export default App; // exporta o componente App para que ele possa ser usado em outros arquivos
+
+export default App;
