@@ -13,10 +13,10 @@ const estiloNumero = {
 
 const formatarDistancia = (distancia) => {
     if (distancia < 1000) {
-        return `${Math.round(distancia)} m`
+        return `a ${Math.round(distancia)} m`
     }
 
-    return `${(distancia / 1000).toFixed(1).replace('.', ',')} km`     
+    return `a ${(distancia / 1000).toFixed(1).replace('.', ',')} km`     
 }
 
 const Lugar = ({ numero, nome, endereco, distancia }) => {
@@ -26,6 +26,7 @@ const Lugar = ({ numero, nome, endereco, distancia }) => {
                 <span style={estiloNumero}>
                     {numero}
                 </span>
+                {' '}
                 <strong>{nome || 'Sem nome'}</strong>
                 <p>{endereco}</p>
             </div>

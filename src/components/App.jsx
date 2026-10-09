@@ -6,6 +6,7 @@ import MeuPonto from "./MeuPonto";
 import geoapifyClient from "../utils/geoapifyClient";
 import Busca from "./Busca";
 import ListaLugares from "./ListaLugares";
+import MapaRadar from "./MapaRadar";
 
 class App extends React.Component {
 
@@ -14,7 +15,10 @@ class App extends React.Component {
         longitude: null,
         horarioLocalizacao: null,
         mensagemDeErro: null,
-        lugares: null
+        lugares: null,
+        buscando: false,
+        erroBusca: null,
+        raioBuscado: null
     }
 
     obterLocalizacao = () => {
@@ -37,11 +41,17 @@ class App extends React.Component {
         )
     }
 
-    componentDidMount() { // método do ciclo de vida do React que é chamado quando o componente é montado
+    componentDidMount() {
         this.obterLocalizacao()
     }
 
     onBuscaRealizada = (categoria, raio) => {
+
+        this.setState({
+            buscando: true,
+            erroBusca: null,
+            raioBuscado: raio
+        })
 
         geoapifyClient.get('/places', {
             params: {
@@ -53,8 +63,17 @@ class App extends React.Component {
         })
         .then((resposta) => {
             this.setState({
-                lugares: resposta.data.features
-            })    
+                lugares: resposta.data.features,
+                buscando: false
+            })
+        })
+        .catch((erro) => {
+            console.error(erro)
+
+            this.setState({
+                buscando: false,
+                erroBusca: 'Não foi possível consultar os lugares. Tente novamente.'
+            })
         })
     }
 
@@ -65,11 +84,12 @@ class App extends React.Component {
         }
 
         const obterAno = () => {
-            const dataAtual = new Date();
-            return dataAtual.getFullYear();
+            const dataAtual = new Date()
+            return dataAtual.getFullYear()
         }
 
         let conteudo
+
         if (this.state.mensagemDeErro) {
             conteudo = (
                 <p>{this.state.mensagemDeErro}</p>
@@ -83,42 +103,78 @@ class App extends React.Component {
         else {
             conteudo = (
                 <>
-                <Cartao cabecalho="Você está aqui">
-                    <MeuPonto
-                        latitude={this.state.latitude}
-                        longitude={this.state.longitude}
-                        horarioLocalizacao={this.state.horarioLocalizacao}
-                        onAtualizar={this.obterLocalizacao}
-                    />
-                </Cartao>
+                    <Cartao cabecalho="Você está aqui">
+                        <MeuPonto
+                            latitude={this.state.latitude}
+                            longitude={this.state.longitude}
+                            horarioLocalizacao={this.state.horarioLocalizacao}
+                            onAtualizar={this.obterLocalizacao}
+                        />
+                    </Cartao>
 
-                <Cartao cabecalho="O que você procura?">
-                    <Busca onBuscaRealizada={this.onBuscaRealizada} />
-                </Cartao>
-
+                    <Cartao cabecalho="O que você procura?">
+                        <Busca
+                            onBuscaRealizada={this.onBuscaRealizada}
+                        />
+                    </Cartao>
                 </>
-
             )
         }
+
         let resultadoBusca = null
 
-        if (this.state.lugares !== null) {
-            if (this.state.lugares.length === 0) {
-                resultadoBusca = (
-                    <p>Nenhum lugar encontrado. Tente aumentar o raio.</p>
-                )    
-            }
-            else {
-                resultadoBusca = (
-                    <ListaLugares lugares={this.state.lugares} />
-                )    
-            }
-        }  
+        if (this.state.buscando) {
+            resultadoBusca = (
+                <Loading mensagem="Procurando lugares..." />
+            )
+        }
+        else if (this.state.erroBusca) {
+            resultadoBusca = (
+                <p>{this.state.erroBusca}</p>
+            )
+        }
+        else if (
+            this.state.lugares !== null &&
+            this.state.lugares.length === 0
+        ) {
+            resultadoBusca = (
+                <p>Nenhum lugar encontrado. Tente aumentar o raio.</p>
+            )
+        }
+        else if (this.state.lugares !== null) {
+
+            const quantidade = this.state.lugares.length
+
+            const resumo = quantidade === 1
+                ? `1 lugar encontrado em até ${this.state.raioBuscado} m`
+                : `${quantidade} lugares encontrados em até ${this.state.raioBuscado} m`
+
+            resultadoBusca = (
+                <>
+                    <strong>{resumo}</strong>
+
+                    <Cartao cabecalho="Radar">
+                        <MapaRadar
+                            latitude={this.state.latitude}
+                            longitude={this.state.longitude}
+                            lugares={this.state.lugares}
+                        />
+                    </Cartao>
+
+                    <ListaLugares
+                        lugares={this.state.lugares}
+                    />
+                </>
+            )
+        }
 
         return (
             <div className="grid">
-
-                <div className="col-12">
+                <div 
+                className="col-12"
+                style={{ textAlign: 'center' }}
+                >
+                    
                     <h1 className="titulo">
                         <i className="pi pi-map-marker"></i>{' '}
                         RolêRadar
@@ -131,23 +187,22 @@ class App extends React.Component {
                     <Creditos />
                 </div>
 
-                <div className="col-12 col-lg-6">
+                <div className="col-12 lg:col-6">
                     {conteudo}
                 </div>
 
-                <div className="col-12 col-lg-6">
+                <div className="col-12 lg:col-6">
                     {resultadoBusca}
                 </div>
 
-                <div className="col-12">
+                <div className="col-12"
+                style={{ textAlign: 'center' }}>
                     <footer>
                         RolêRadar &copy; {obterAno()}
                     </footer>
-
                 </div>
 
             </div>
-            
         )
     }
 }
