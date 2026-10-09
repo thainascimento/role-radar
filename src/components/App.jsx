@@ -5,6 +5,7 @@ import Cartao from "./Cartao";
 import MeuPonto from "./MeuPonto";
 import geoapifyClient from "../utils/geoapifyClient";
 import Busca from "./Busca";
+import ListaLugares from "./ListaLugares";
 
 class App extends React.Component {
 
@@ -12,7 +13,8 @@ class App extends React.Component {
         latitude: null,
         longitude: null,
         horarioLocalizacao: null,
-        mensagemDeErro: null
+        mensagemDeErro: null,
+        lugares: null
     }
 
     obterLocalizacao = () => {
@@ -50,7 +52,9 @@ class App extends React.Component {
             }
         })
         .then((resposta) => {
-            console.log(resposta.data.features)
+            this.setState({
+                lugares: resposta.data.features
+            })    
         })
     }
 
@@ -96,26 +100,54 @@ class App extends React.Component {
 
             )
         }
+        let resultadoBusca = null
+
+        if (this.state.lugares !== null) {
+            if (this.state.lugares.length === 0) {
+                resultadoBusca = (
+                    <p>Nenhum lugar encontrado. Tente aumentar o raio.</p>
+                )    
+            }
+            else {
+                resultadoBusca = (
+                    <ListaLugares lugares={this.state.lugares} />
+                )    
+            }
+        }  
 
         return (
-            <>
-                <h1 className="titulo">
-                    <i className="pi pi-map-marker"></i>{' '}
-                    RolêRadar
-                </h1>
+            <div className="grid">
 
-                <p style={estiloSubtitulo}>
-                    Descubra o que existe perto de você
-                </p>
+                <div className="col-12">
+                    <h1 className="titulo">
+                        <i className="pi pi-map-marker"></i>{' '}
+                        RolêRadar
+                    </h1>
 
-                <Creditos />
+                    <p style={estiloSubtitulo}>
+                        Descubra o que existe perto de você
+                    </p>
 
-                {conteudo}
+                    <Creditos />
+                </div>
 
-                <footer>
-                    RolêRadar &copy; {obterAno()}
-                </footer>
-            </>
+                <div className="col-12 col-lg-6">
+                    {conteudo}
+                </div>
+
+                <div className="col-12 col-lg-6">
+                    {resultadoBusca}
+                </div>
+
+                <div className="col-12">
+                    <footer>
+                        RolêRadar &copy; {obterAno()}
+                    </footer>
+
+                </div>
+
+            </div>
+            
         )
     }
 }
